@@ -65,16 +65,21 @@
         </div>
 
         <!-- Scan & Share buttons -->
-        <div class="flex gap-2 mb-6">
-            <button onclick="startScanner()" 
-                    class="flex-1 bg-zinc-800 hover:bg-zinc-700 py-3 rounded-2xl flex items-center justify-center gap-2 text-base">
-                📷 Scan QR / Barcode
-            </button>
-            <button onclick="showQRModal()" 
-                    class="flex-1 bg-zinc-800 hover:bg-zinc-700 py-3 rounded-2xl flex items-center justify-center gap-2 text-base">
-                🔗 Share via QR
-            </button>
-        </div>
+        <!-- Scan, Share & Paste buttons -->
+<div class="flex gap-2 mb-6">
+    <button onclick="startScanner()" 
+            class="flex-1 bg-zinc-800 hover:bg-zinc-700 py-3 rounded-2xl flex items-center justify-center gap-2 text-base">
+        📷 Scan
+    </button>
+    <button onclick="showQRModal()" 
+            class="flex-1 bg-zinc-800 hover:bg-zinc-700 py-3 rounded-2xl flex items-center justify-center gap-2 text-base">
+        🔗 Share QR
+    </button>
+    <button onclick="showCSVModal()" 
+            class="flex-1 bg-zinc-800 hover:bg-zinc-700 py-3 rounded-2xl flex items-center justify-center gap-2 text-base">
+        📋 Paste CSV
+    </button>
+</div>
 
         <ul id="list-ul" class="space-y-2"></ul>
     </div>
@@ -121,13 +126,18 @@
 <div id="csv-modal" onclick="if(event.target===this)hideCSVModal()" 
      class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
     <div onclick="event.stopImmediatePropagation()" class="bg-zinc-900 text-white p-6 rounded-3xl w-full max-w-md mx-4">
-        <h3 class="font-bold mb-3">Paste shared CSV</h3>
+        <h3 class="font-bold mb-2">Import CSV List</h3>
+        <p class="text-sm text-zinc-400 mb-4">Paste a comma-separated list.<br>Example: milk, bread, eggs, apples</p>
+        
         <textarea id="csv-text" rows="6"
-                  class="w-full bg-zinc-800 rounded-2xl p-4 text-white outline-none resize-none"
-                  placeholder="milk, bread, eggs, apples"></textarea>
-        <div class="flex gap-3 mt-4">
-            <button onclick="hideCSVModal()" class="flex-1 py-4 text-zinc-400">Cancel</button>
-            <button onclick="importCSV()" class="flex-1 py-4 bg-emerald-500 rounded-2xl">Import & Merge</button>
+                  class="w-full bg-zinc-800 rounded-2xl p-4 text-white outline-none resize-none font-mono text-sm"
+                  placeholder="milk, bread, eggs, apples, butter, cheese"></textarea>
+        
+        <div class="flex gap-3 mt-6">
+            <button onclick="hideCSVModal()" 
+                    class="flex-1 py-4 text-zinc-400 font-medium">Cancel</button>
+            <button onclick="importCSV()" 
+                    class="flex-1 py-4 bg-emerald-500 hover:bg-emerald-600 rounded-2xl font-medium">Import & Merge</button>
         </div>
     </div>
 </div>
@@ -336,30 +346,49 @@ function copyCSV() {
 }
 
 // ==================== CSV IMPORT ====================
+function showCSVModal() {
+    document.getElementById('csv-modal').classList.remove('hidden');
+    document.getElementById('csv-text').focus();
+}
+
 function hideCSVModal() {
     document.getElementById('csv-modal').classList.add('hidden');
+    document.getElementById('csv-text').value = '';
 }
 
 function importCSV() {
     const text = document.getElementById('csv-text').value.trim();
-    if (!text) return hideCSVModal();
+    if (!text) {
+        hideCSVModal();
+        return;
+    }
     
-    const items = text.split(',').map(i => i.trim()).filter(Boolean);
+    // Improved parsing: split by comma, handle spaces, remove empties
+    const items = text.split(',')
+                      .map(i => i.trim())
+                      .filter(i => i.length > 0);
+    
     let added = 0;
     items.forEach(item => {
         if (!shoppingList.includes(item)) {
             shoppingList.push(item);
             added++;
         }
-        if (!history.includes(item)) history.push(item);
+        if (!history.includes(item)) {
+            history.push(item);
+        }
     });
     
     saveData();
     renderList();
     hideCSVModal();
-    alert(`✅ Merged ${added} new item(s)`);
+    
+    if (added > 0) {
+        alert(`✅ Successfully added ${added} new item(s) to your list!`);
+    } else {
+        alert(`ℹ️ All items were already in your list (no new additions).`);
+    }
 }
-
 // ==================== SCANNER ====================
 let html5QrcodeScanner = null;
 
