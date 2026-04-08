@@ -61,7 +61,6 @@
             <!-- Suggestions dropdown -->
             <div id="suggestions" 
                  class="hidden absolute z-50 mt-2 w-full bg-zinc-900 rounded-3xl shadow-2xl border border-zinc-700 max-h-[280px] overflow-auto">
-                <!-- suggestions populated by JS -->
             </div>
         </div>
 
@@ -91,9 +90,6 @@
     </div>
 
 </div>
-
-<!-- QR Modal, Scanner Modal, CSV Modal remain the same as previous version -->
-<!-- (I'm keeping them identical for brevity - copy them from your current file) -->
 
 <!-- QR Modal -->
 <div id="qr-modal" onclick="if(event.target===this)hideQRModal()" 
@@ -202,11 +198,7 @@ function renderBasket() {
     }
 }
 
-function renderHistoryDatalist() {
-    // Optional backup - kept for compatibility
-}
-
-// ==================== NEW: LIVE SEARCH SUGGESTIONS ====================
+// ==================== LIVE SEARCH SUGGESTIONS ====================
 function handleInput(e) {
     const input = document.getElementById('add-input');
     const query = input.value.toLowerCase().trim();
@@ -217,10 +209,9 @@ function handleInput(e) {
         return;
     }
 
-    // Find matches from history
     const matches = history.filter(item => 
         item.toLowerCase().includes(query)
-    ).slice(0, 8); // limit to 8 suggestions
+    ).slice(0, 8);
 
     if (matches.length === 0) {
         suggestionsDiv.classList.add('hidden');
@@ -232,9 +223,7 @@ function handleInput(e) {
         const div = document.createElement('div');
         div.className = 'px-5 py-4 hover:bg-zinc-800 cursor-pointer border-b border-zinc-800 last:border-none text-lg';
         div.textContent = item;
-        div.onclick = () => {
-            selectSuggestion(item);
-        };
+        div.onclick = () => selectSuggestion(item);
         suggestionsDiv.appendChild(div);
     });
 
@@ -245,7 +234,7 @@ function selectSuggestion(item) {
     const input = document.getElementById('add-input');
     input.value = item;
     document.getElementById('suggestions').classList.add('hidden');
-    addCurrentItem();   // auto-add when selecting
+    addCurrentItem();
 }
 
 function addCurrentItem() {
@@ -266,7 +255,7 @@ function addCurrentItem() {
     document.getElementById('suggestions').classList.add('hidden');
 }
 
-// ==================== Other functions (moveToBasket, delete, etc.) ====================
+// ==================== LIST & BASKET ACTIONS ====================
 function moveToBasket(index) {
     const item = shoppingList.splice(index, 1)[0];
     if (!basket.includes(item)) basket.push(item);
@@ -316,7 +305,7 @@ function switchTab(n) {
     if (n === 1) renderBasket();
 }
 
-// ==================== SHARE / SCANNER / CSV (unchanged) ====================
+// ==================== SHARE ====================
 const PREFIX = "GROKLIST:v1:";
 
 function showQRModal() {
@@ -346,12 +335,15 @@ function copyCSV() {
     });
 }
 
+// ==================== CSV IMPORT ====================
 function hideCSVModal() {
     document.getElementById('csv-modal').classList.add('hidden');
 }
+
 function importCSV() {
     const text = document.getElementById('csv-text').value.trim();
     if (!text) return hideCSVModal();
+    
     const items = text.split(',').map(i => i.trim()).filter(Boolean);
     let added = 0;
     items.forEach(item => {
@@ -361,12 +353,14 @@ function importCSV() {
         }
         if (!history.includes(item)) history.push(item);
     });
+    
     saveData();
     renderList();
     hideCSVModal();
     alert(`✅ Merged ${added} new item(s)`);
 }
 
+// ==================== SCANNER ====================
 let html5QrcodeScanner = null;
 
 function startScanner() {
@@ -391,8 +385,8 @@ function startScanner() {
                 });
                 saveData();
                 renderList();
-                alert(`✅ Imported ${added} new item(s)`);
-            } catch(e) {}
+                alert(`✅ Imported ${added} new item(s) from shared list`);
+            } catch(e) { alert("Invalid shared list"); }
         } else {
             const item = decodedText.trim();
             if (item && !shoppingList.includes(item)) {
