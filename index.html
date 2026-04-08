@@ -3,16 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grok Shopping • Offline</title>
+    <title>Grok Shopping</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛒</text></svg>">
     <style>
         body { font-family: system-ui, -apple-system, sans-serif; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         li { transition: all 0.2s; }
     </style>
+    <script>
+        // Suppress Tailwind CDN warning
+        tailwind.config = {
+            content: [],
+            theme: { extend: {} }
+        };
+    </script>
 </head>
 <body class="bg-zinc-950 text-white min-h-screen pb-20">
 
@@ -37,7 +45,6 @@
 
     <!-- LIST TAB -->
     <div id="content-0" class="tab-content active p-4">
-        <!-- Add item -->
         <div class="flex gap-2 mb-6">
             <input id="add-input" list="history-datalist" 
                    class="flex-1 bg-zinc-900 text-white rounded-2xl px-5 py-4 outline-none text-lg placeholder:text-zinc-500"
@@ -47,7 +54,6 @@
                     class="bg-emerald-500 hover:bg-emerald-600 px-8 rounded-2xl text-lg font-medium">Add</button>
         </div>
 
-        <!-- Scan buttons -->
         <div class="flex gap-2 mb-6">
             <button onclick="startScanner()" 
                     class="flex-1 bg-zinc-800 hover:bg-zinc-700 py-3 rounded-2xl flex items-center justify-center gap-2 text-base">
@@ -74,7 +80,7 @@
 
 </div>
 
-<!-- QR Display Modal -->
+<!-- QR Modal -->
 <div id="qr-modal" onclick="if(event.target===this)hideQRModal()" 
      class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
     <div onclick="event.stopImmediatePropagation()" class="bg-white text-black p-6 rounded-3xl max-w-xs w-full mx-4">
@@ -91,12 +97,12 @@
      class="hidden fixed inset-0 bg-black/90 flex flex-col z-[110]">
     <div class="p-4 flex justify-between text-white">
         <span class="text-lg font-medium">Scan QR or Barcode</span>
-        <button onclick="stopScanner()" class="text-3xl">✕</button>
+        <button onclick="stopScanner()" class="text-3xl leading-none">✕</button>
     </div>
     <div id="reader" class="flex-1 w-full"></div>
     <div class="text-center text-xs text-zinc-400 p-4">
         Point camera at QR code or barcode<br>
-        List QR = merge list | Any other = add item
+        List QR = merge | Any other = add item
     </div>
 </div>
 
@@ -104,10 +110,10 @@
 <div id="csv-modal" onclick="if(event.target===this)hideCSVModal()" 
      class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
     <div onclick="event.stopImmediatePropagation()" class="bg-zinc-900 text-white p-6 rounded-3xl w-full max-w-md mx-4">
-        <h3 class="font-bold mb-3">Paste CSV list</h3>
+        <h3 class="font-bold mb-3">Paste shared CSV</h3>
         <textarea id="csv-text" rows="6"
                   class="w-full bg-zinc-800 rounded-2xl p-4 text-white outline-none resize-none"
-                  placeholder="milk,bread,eggs,apples"></textarea>
+                  placeholder="milk, bread, eggs, apples"></textarea>
         <div class="flex gap-3 mt-4">
             <button onclick="hideCSVModal()" class="flex-1 py-4 text-zinc-400">Cancel</button>
             <button onclick="importCSV()" class="flex-1 py-4 bg-emerald-500 rounded-2xl">Import & Merge</button>
@@ -116,16 +122,15 @@
 </div>
 
 <script>
-// ==================== STATE ====================
+// ==================== STATE & STORAGE ====================
 let shoppingList = [];
 let basket = [];
-let history = []; // all items ever added
+let history = [];
 
 const LIST_KEY = 'grok_shopping_list';
 const BASKET_KEY = 'grok_shopping_basket';
 const HISTORY_KEY = 'grok_shopping_history';
 
-// ==================== LOAD / SAVE ====================
 function loadData() {
     shoppingList = JSON.parse(localStorage.getItem(LIST_KEY)) || [];
     basket = JSON.parse(localStorage.getItem(BASKET_KEY)) || [];
@@ -151,16 +156,16 @@ function renderList() {
     ul.innerHTML = '';
     shoppingList.forEach((item, i) => {
         const li = document.createElement('li');
-        li.className = 'bg-zinc-900 rounded-3xl px-5 py-4 flex items-center justify-between group';
+        li.className = 'bg-zinc-900 rounded-3xl px-5 py-4 flex items-center justify-between group cursor-pointer';
         li.innerHTML = `
-            <span onclick="moveToBasket(\( {i})" class="cursor-pointer flex-1 text-lg"> \){item}</span>
-            <button onclick="deleteFromList(${i});event.stopImmediatePropagation()" 
-                    class="opacity-0 group-hover:opacity-100 text-red-400 text-2xl px-2">✕</button>
+            <span onclick="moveToBasket(${i}); event.stopImmediatePropagation()" class="flex-1 text-lg">${item}</span>
+            <button onclick="deleteFromList(${i}); event.stopImmediatePropagation()" 
+                    class="opacity-0 group-hover:opacity-100 text-red-400 text-2xl px-3">✕</button>
         `;
         ul.appendChild(li);
     });
     if (shoppingList.length === 0) {
-        ul.innerHTML = `<li class="text-center text-zinc-500 py-8">Your list is empty.<br>Tap + or scan to add items</li>`;
+        ul.innerHTML = `<li class="text-center text-zinc-500 py-12">List is empty.<br>Add items or scan</li>`;
     }
 }
 
@@ -169,26 +174,26 @@ function renderBasket() {
     ul.innerHTML = '';
     basket.forEach((item, i) => {
         const li = document.createElement('li');
-        li.className = 'bg-zinc-900 rounded-3xl px-5 py-4 flex items-center justify-between group';
+        li.className = 'bg-zinc-900 rounded-3xl px-5 py-4 flex items-center justify-between group cursor-pointer';
         li.innerHTML = `
-            <span onclick="moveToList(\( {i})" class="cursor-pointer flex-1 text-lg line-through text-zinc-400"> \){item}</span>
-            <button onclick="deleteFromBasket(${i});event.stopImmediatePropagation()" 
-                    class="opacity-0 group-hover:opacity-100 text-red-400 text-2xl px-2">✕</button>
+            <span onclick="moveToList(${i}); event.stopImmediatePropagation()" class="flex-1 text-lg line-through text-zinc-400">${item}</span>
+            <button onclick="deleteFromBasket(${i}); event.stopImmediatePropagation()" 
+                    class="opacity-0 group-hover:opacity-100 text-red-400 text-2xl px-3">✕</button>
         `;
         ul.appendChild(li);
     });
     if (basket.length === 0) {
-        ul.innerHTML = `<li class="text-center text-zinc-500 py-8">Basket empty</li>`;
+        ul.innerHTML = `<li class="text-center text-zinc-500 py-12">Basket is empty</li>`;
     }
 }
 
 function renderHistoryDatalist() {
-    const datalist = document.getElementById('history-datalist');
-    datalist.innerHTML = '';
+    const dl = document.getElementById('history-datalist');
+    dl.innerHTML = '';
     history.forEach(item => {
         const opt = document.createElement('option');
         opt.value = item;
-        datalist.appendChild(opt);
+        dl.appendChild(opt);
     });
 }
 
@@ -198,12 +203,9 @@ function addItem() {
     const value = input.value.trim();
     if (!value) return;
     
-    if (!shoppingList.includes(value)) {
-        shoppingList.push(value);
-    }
-    if (!history.includes(value)) {
-        history.push(value);
-    }
+    if (!shoppingList.includes(value)) shoppingList.push(value);
+    if (!history.includes(value)) history.push(value);
+    
     saveData();
     renderList();
     renderHistoryDatalist();
@@ -239,7 +241,7 @@ function deleteFromBasket(index) {
 }
 
 function clearBasket() {
-    if (confirm('Clear entire basket?')) {
+    if (confirm('Clear the entire basket?')) {
         basket = [];
         saveData();
         renderBasket();
@@ -248,7 +250,7 @@ function clearBasket() {
 
 function switchTab(n) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    document.getElementById('content-' + n).classList.add('active');
+    document.getElementById(`content-${n}`).classList.add('active');
     
     document.querySelectorAll('button[id^="tab-"]').forEach((el, i) => {
         el.classList.toggle('border-b-2', i === n);
@@ -259,7 +261,7 @@ function switchTab(n) {
     if (n === 1) renderBasket();
 }
 
-// ==================== SHARE & IMPORT ====================
+// ==================== SHARE ====================
 const PREFIX = "GROKLIST:v1:";
 
 function showQRModal() {
@@ -272,7 +274,7 @@ function showQRModal() {
         text: data,
         width: 260,
         height: 260,
-        colorDark: "#000000",
+        colorDark: "#111827",
         colorLight: "#ffffff"
     });
     modal.classList.remove('hidden');
@@ -285,12 +287,12 @@ function hideQRModal() {
 function copyCSV() {
     const csv = shoppingList.join(', ');
     navigator.clipboard.writeText(csv).then(() => {
-        alert('✅ CSV copied to clipboard!');
+        alert('✅ CSV copied to clipboard');
         hideQRModal();
     });
 }
 
-// CSV Paste
+// ==================== IMPORT CSV ====================
 function showCSVModal() {
     document.getElementById('csv-modal').classList.remove('hidden');
 }
@@ -315,7 +317,7 @@ function importCSV() {
     renderList();
     renderHistoryDatalist();
     hideCSVModal();
-    alert(`✅ Added ${added} new item(s) from CSV`);
+    alert(`✅ Merged ${added} new item(s)`);
 }
 
 // ==================== SCANNER ====================
@@ -324,13 +326,11 @@ let html5QrcodeScanner = null;
 function startScanner() {
     document.getElementById('scanner-modal').classList.remove('hidden');
     
-    if (html5QrcodeScanner) {
-        html5QrcodeScanner.clear();
-    }
+    if (html5QrcodeScanner) html5QrcodeScanner.clear();
     
     html5QrcodeScanner = new Html5QrcodeScanner(
-        "reader",
-        { fps: 10, qrbox: { width: 250, height: 250 } },
+        "reader", 
+        { fps: 10, qrbox: { width: 250, height: 250 } }, 
         false
     );
     
@@ -338,11 +338,10 @@ function startScanner() {
         stopScanner();
         
         if (decodedText.startsWith(PREFIX)) {
-            // Import shared list
             try {
-                const json = JSON.parse(decodedText.slice(PREFIX.length));
+                const imported = JSON.parse(decodedText.slice(PREFIX.length));
                 let added = 0;
-                json.forEach(item => {
+                imported.forEach(item => {
                     if (!shoppingList.includes(item)) {
                         shoppingList.push(item);
                         added++;
@@ -353,9 +352,8 @@ function startScanner() {
                 renderList();
                 renderHistoryDatalist();
                 alert(`✅ Imported ${added} new item(s) from shared list`);
-            } catch(e) {}
+            } catch(e) { alert("Invalid shared list"); }
         } else {
-            // Single item (barcode or any QR)
             const item = decodedText.trim();
             if (item && !shoppingList.includes(item)) {
                 shoppingList.push(item);
@@ -366,7 +364,7 @@ function startScanner() {
                 alert(`✅ Added: ${item}`);
             }
         }
-    }, (error) => {});
+    }, () => {});
 }
 
 function stopScanner() {
@@ -378,13 +376,12 @@ function stopScanner() {
 }
 
 // ==================== INIT ====================
-window.onload = function() {
+window.onload = () => {
     loadData();
     renderList();
     renderBasket();
     renderHistoryDatalist();
     
-    // Tailwind ready
     console.log('%c✅ Grok Shopping List ready (fully offline)', 'color:#10b981; font-size:13px');
 };
 </script>
