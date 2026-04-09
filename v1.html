@@ -6,7 +6,21 @@
     <title>Grok Shopping</title>
     
     <!-- PWA Manifest & Icons -->
-    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiR3JvayBTaG9wcGluZyIsInNob3J0X25hbWUiOiJHcm9rIFNob3BwaW5nIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMxODE4MWIiLCJ0aGVtZV9jb2xvciI6IiMxMGI5ODEiLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sOzxzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgMTAwIDEwMCc+PHRleHQgeT0nLjllbScgZm9udC1zaXplPSc5MCc+8J+YsDwvdGV4dD48L3N2Zz4iLCJzaXplcyI6IjE5MngxOTIiLCJ0eXBlIjoiimage/svg+xmlIn1dfQ==">
+    <!-- PWA Support -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%92%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="data:application/manifest+json,{
+  &quot;name&quot;:&quot;Grok Shopping&quot;,
+  &quot;short_name&quot;:&quot;Grok Shop&quot;,
+  &quot;start_url&quot;:&quot;.&quot;,
+  &quot;display&quot;:&quot;standalone&quot;,
+  &quot;background_color&quot;:&quot;#18181b&quot;,
+  &quot;theme_color&quot;:&quot;#10b981&quot;,
+  &quot;icons&quot;:[{
+    &quot;src&quot;:&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%92%3C/text%3E%3C/svg%3E&quot;,
+    &quot;sizes&quot;:&quot;192x192&quot;,
+    &quot;type&quot;:&quot;image/svg+xml&quot;
+  }]
+}">
     
     <style>
         body { font-family: system-ui, -apple-system, sans-serif; margin:0; }
@@ -275,7 +289,6 @@ function switchTab(n) {
 }
 
 // ==================== SHARE ====================
-const PREFIX = "GROKLIST:v1:";
 
 function showQRModal() {
     const modal = document.getElementById('qr-modal');
