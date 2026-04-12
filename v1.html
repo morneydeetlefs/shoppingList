@@ -21,6 +21,13 @@
             scrollbar-width: thin;
         }
     </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        content: [],
+        theme: { extend: {} }
+    };
+</script>
 </head>
 <body class="bg-zinc-950 text-white min-h-screen pb-20">
 
@@ -204,6 +211,8 @@ function handleInput(e) {
 
     suggestionsDiv.classList.remove('hidden');
 }
+
+
 
 function selectSuggestion(item) {
     const input = document.getElementById('add-input');
