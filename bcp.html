@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grok Shopping</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛒</text></svg>">
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        li { transition: all 0.2s; }
+        #suggestions {
+            max-height: 280px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
+    </style>
+    <script>
+        tailwind.config = { content: [], theme: { extend: {} } };
+    </script>
+</head>
+<body class="bg-zinc-950 text-white min-h-screen pb-20">
+
+<div class="max-w-md mx-auto">
+
+    <!-- Header -->
+    <div class="bg-zinc-900 p-4 flex items-center justify-between sticky top-0 z-50">
+        <h1 class="text-2xl font-bold flex items-center gap-2">🛒 Grok Shopping</h1>
+        <div class="flex items-center gap-3 text-sm">
+            <div id="list-count" class="bg-emerald-600 px-3 py-1 rounded-full">0</div>
+            <div id="basket-count" class="bg-amber-600 px-3 py-1 rounded-full">0</div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex border-b border-zinc-800">
+        <button onclick="switchTab(0)" id="tab-0"
+                class="flex-1 py-4 text-center font-medium border-b-2 border-emerald-500 text-emerald-400">List</button>
+        <button onclick="switchTab(1)" id="tab-1"
+                class="flex-1 py-4 text-center font-medium">Basket</button>
+    </div>
+
+    <!-- LIST TAB -->
+    <div id="content-0" class="tab-content active p-4">
+        <!-- Add item with suggestions -->
+        <div class="relative mb-6">
+            <div class="flex gap-2">
+                <input id="add-input" 
+                       class="flex-1 bg-zinc-900 text-white rounded-2xl px-5 py-4 outline-none text-lg placeholder:text-zinc-500"
+                       placeholder="Add item... (type or scan)" 
+                       autocomplete="off"
+                       onkeyup="handleInput(event)">
+                <button onclick="addCurrentItem()" 
+                        class="bg-emerald-500 hover:bg-emerald-600 px-8 rounded-2xl text-lg font-medium">Add</button>
+            </div>
+            
+            <!-- Suggestions dropdown -->
+            <div id="suggestions" 
+                 class="hidden absolute z-50 mt-2 w-full bg-zinc-900 rounded-3xl shadow-2xl border border-zinc-700 max-h-[280px] overflow-auto">
+            </div>
+        </div>
+
+        <!-- Scan & Share buttons -->
+        <!-- Scan, Share & Paste buttons -->
+<div class="flex gap-2 mb-6">
+    <button onclick="startScanner()" 
+            class="flex-1 bg-zinc-800 hover:bg-zinc-700 py-3 rounded-2xl flex items-center justify-center gap-2 text-base">
+        📷 Scan
+    </button>
+    <button onclick="showQRModal()" 
+            class="flex-1 bg-zinc-800 hover:bg-zinc-700 py-3 rounded-2xl flex items-center justify-center gap-2 text-base">
+        🔗 Share QR
+    </button>
+    <button onclick="showCSVModal()" 
+            class="flex-1 bg-zinc-800 hover:bg-zinc-700 py-3 rounded-2xl flex items-center justify-center gap-2 text-base">
+        📋 Paste CSV
+    </button>
+</div>
+
+        <ul id="list-ul" class="space-y-2"></ul>
+    </div>
+
+    <!-- BASKET TAB -->
+    <div id="content-1" class="tab-content p-4">
+        <ul id="basket-ul" class="space-y-2"></ul>
+        
+        <button onclick="clearBasket()" 
+                class="mt-8 w-full bg-red-500/10 text-red-400 py-4 rounded-3xl font-medium flex items-center justify-center gap-2">
+            🗑️ Clear Basket
+        </button>
+    </div>
+
+</div>
+
+<!-- QR Modal -->
+<div id="qr-modal" onclick="if(event.target===this)hideQRModal()" 
+     class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
+    <div onclick="event.stopImmediatePropagation()" class="bg-white text-black p-6 rounded-3xl max-w-xs w-full mx-4">
+        <h3 class="text-xl font-bold mb-4 text-center">Share this list</h3>
+        <div id="qrcode" class="mx-auto"></div>
+        <button onclick="copyCSV()" 
+                class="mt-6 w-full py-4 bg-zinc-100 rounded-2xl text-base font-medium">Copy as CSV instead</button>
+        <button onclick="hideQRModal()" class="mt-2 w-full py-4 text-zinc-500">Close</button>
+    </div>
+</div>
+
+<!-- Scanner Modal -->
+<div id="scanner-modal" onclick="if(event.target===this)stopScanner()" 
+     class="hidden fixed inset-0 bg-black/90 flex flex-col z-[110]">
+    <div class="p-4 flex justify-between text-white">
+        <span class="text-lg font-medium">Scan QR or Barcode</span>
+        <button onclick="stopScanner()" class="text-3xl leading-none">✕</button>
+    </div>
+    <div id="reader" class="flex-1 w-full"></div>
+    <div class="text-center text-xs text-zinc-400 p-4">
+        Point camera at QR code or barcode<br>
+        List QR = merge | Any other = add item
+    </div>
+</div>
+
+<!-- CSV Paste Modal -->
+<div id="csv-modal" onclick="if(event.target===this)hideCSVModal()" 
+     class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-[100]">
+    <div onclick="event.stopImmediatePropagation()" class="bg-zinc-900 text-white p-6 rounded-3xl w-full max-w-md mx-4">
+        <h3 class="font-bold mb-2">Import CSV List</h3>
+        <p class="text-sm text-zinc-400 mb-4">Paste a comma-separated list.<br>Example: milk, bread, eggs, apples</p>
+        
+        <textarea id="csv-text" rows="6"
+                  class="w-full bg-zinc-800 rounded-2xl p-4 text-white outline-none resize-none font-mono text-sm"
+                  placeholder="milk, bread, eggs, apples, butter, cheese"></textarea>
+        
+        <div class="flex gap-3 mt-6">
+            <button onclick="hideCSVModal()" 
+                    class="flex-1 py-4 text-zinc-400 font-medium">Cancel</button>
+            <button onclick="importCSV()" 
+                    class="flex-1 py-4 bg-emerald-500 hover:bg-emerald-600 rounded-2xl font-medium">Import & Merge</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== STATE ====================
+let shoppingList = [];
+let basket = [];
+let history = [];
+
+const LIST_KEY = 'grok_shopping_list';
+const BASKET_KEY = 'grok_shopping_basket';
+const HISTORY_KEY = 'grok_shopping_history';
+
+function loadData() {
+    shoppingList = JSON.parse(localStorage.getItem(LIST_KEY)) || [];
+    basket = JSON.parse(localStorage.getItem(BASKET_KEY)) || [];
+    history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+    updateCounts();
+}
+
+function saveData() {
+    localStorage.setItem(LIST_KEY, JSON.stringify(shoppingList));
+    localStorage.setItem(BASKET_KEY, JSON.stringify(basket));
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    updateCounts();
+}
+
+function updateCounts() {
+    document.getElementById('list-count').textContent = shoppingList.length;
+    document.getElementById('basket-count').textContent = basket.length;
+}
+
+// ==================== RENDER ====================
+function renderList() {
+    const ul = document.getElementById('list-ul');
+    ul.innerHTML = '';
+    shoppingList.forEach((item, i) => {
+        const li = document.createElement('li');
+        li.className = 'bg-zinc-900 rounded-3xl px-5 py-4 flex items-center justify-between group cursor-pointer';
+        li.innerHTML = `
+            <span onclick="moveToBasket(${i}); event.stopImmediatePropagation()" class="flex-1 text-lg">${item}</span>
+            <button onclick="deleteFromList(${i}); event.stopImmediatePropagation()" 
+                    class="opacity-0 group-hover:opacity-100 text-red-400 text-2xl px-3">✕</button>
+        `;
+        ul.appendChild(li);
+    });
+    if (shoppingList.length === 0) {
+        ul.innerHTML = `<li class="text-center text-zinc-500 py-12">List is empty.<br>Add items or scan</li>`;
+    }
+}
+
+function renderBasket() {
+    const ul = document.getElementById('basket-ul');
+    ul.innerHTML = '';
+    basket.forEach((item, i) => {
+        const li = document.createElement('li');
+        li.className = 'bg-zinc-900 rounded-3xl px-5 py-4 flex items-center justify-between group cursor-pointer';
+        li.innerHTML = `
+            <span onclick="moveToList(${i}); event.stopImmediatePropagation()" class="flex-1 text-lg line-through text-zinc-400">${item}</span>
+            <button onclick="deleteFromBasket(${i}); event.stopImmediatePropagation()" 
+                    class="opacity-0 group-hover:opacity-100 text-red-400 text-2xl px-3">✕</button>
+        `;
+        ul.appendChild(li);
+    });
+    if (basket.length === 0) {
+        ul.innerHTML = `<li class="text-center text-zinc-500 py-12">Basket is empty</li>`;
+    }
+}
+
+// ==================== LIVE SEARCH SUGGESTIONS ====================
+function handleInput(e) {
+    const input = document.getElementById('add-input');
+    const query = input.value.toLowerCase().trim();
+    const suggestionsDiv = document.getElementById('suggestions');
+
+    if (query.length < 1) {
+        suggestionsDiv.classList.add('hidden');
+        return;
+    }
+
+    const matches = history.filter(item => 
+        item.toLowerCase().includes(query)
+    ).slice(0, 8);
+
+    if (matches.length === 0) {
+        suggestionsDiv.classList.add('hidden');
+        return;
+    }
+
+    suggestionsDiv.innerHTML = '';
+    matches.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'px-5 py-4 hover:bg-zinc-800 cursor-pointer border-b border-zinc-800 last:border-none text-lg';
+        div.textContent = item;
+        div.onclick = () => selectSuggestion(item);
+        suggestionsDiv.appendChild(div);
+    });
+
+    suggestionsDiv.classList.remove('hidden');
+}
+
+function selectSuggestion(item) {
+    const input = document.getElementById('add-input');
+    input.value = item;
+    document.getElementById('suggestions').classList.add('hidden');
+    addCurrentItem();
+}
+
+function addCurrentItem() {
+    const input = document.getElementById('add-input');
+    const value = input.value.trim();
+    if (!value) return;
+
+    if (!shoppingList.includes(value)) {
+        shoppingList.push(value);
+    }
+    if (!history.includes(value)) {
+        history.push(value);
+    }
+
+    saveData();
+    renderList();
+    input.value = '';
+    document.getElementById('suggestions').classList.add('hidden');
+}
+
+// ==================== LIST & BASKET ACTIONS ====================
+function moveToBasket(index) {
+    const item = shoppingList.splice(index, 1)[0];
+    if (!basket.includes(item)) basket.push(item);
+    saveData();
+    renderList();
+    renderBasket();
+}
+
+function moveToList(index) {
+    const item = basket.splice(index, 1)[0];
+    if (!shoppingList.includes(item)) shoppingList.push(item);
+    saveData();
+    renderList();
+    renderBasket();
+}
+
+function deleteFromList(index) {
+    shoppingList.splice(index, 1);
+    saveData();
+    renderList();
+}
+
+function deleteFromBasket(index) {
+    basket.splice(index, 1);
+    saveData();
+    renderBasket();
+}
+
+function clearBasket() {
+    if (confirm('Clear the entire basket?')) {
+        basket = [];
+        saveData();
+        renderBasket();
+    }
+}
+
+function switchTab(n) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.getElementById(`content-${n}`).classList.add('active');
+    
+    document.querySelectorAll('button[id^="tab-"]').forEach((el, i) => {
+        el.classList.toggle('border-b-2', i === n);
+        el.classList.toggle('border-emerald-500', i === n);
+        el.classList.toggle('text-emerald-400', i === n);
+    });
+    
+    if (n === 1) renderBasket();
+}
+
+// ==================== SHARE ====================
+const PREFIX = "GROKLIST:v1:";
+
+function showQRModal() {
+    const modal = document.getElementById('qr-modal');
+    const container = document.getElementById('qrcode');
+    container.innerHTML = '';
+    const data = PREFIX + JSON.stringify(shoppingList);
+    new QRCode(container, {
+        text: data,
+        width: 260,
+        height: 260,
+        colorDark: "#111827",
+        colorLight: "#ffffff"
+    });
+    modal.classList.remove('hidden');
+}
+
+function hideQRModal() {
+    document.getElementById('qr-modal').classList.add('hidden');
+}
+
+function copyCSV() {
+    const csv = shoppingList.join(', ');
+    navigator.clipboard.writeText(csv).then(() => {
+        alert('✅ CSV copied to clipboard');
+        hideQRModal();
+    });
+}
+
+// ==================== CSV IMPORT ====================
+function showCSVModal() {
+    document.getElementById('csv-modal').classList.remove('hidden');
+    document.getElementById('csv-text').focus();
+}
+
+function hideCSVModal() {
+    document.getElementById('csv-modal').classList.add('hidden');
+    document.getElementById('csv-text').value = '';
+}
+
+function importCSV() {
+    const text = document.getElementById('csv-text').value.trim();
+    if (!text) {
+        hideCSVModal();
+        return;
+    }
+    
+    // Improved parsing: split by comma, handle spaces, remove empties
+    const items = text.split(',')
+                      .map(i => i.trim())
+                      .filter(i => i.length > 0);
+    
+    let added = 0;
+    items.forEach(item => {
+        if (!shoppingList.includes(item)) {
+            shoppingList.push(item);
+            added++;
+        }
+        if (!history.includes(item)) {
+            history.push(item);
+        }
+    });
+    
+    saveData();
+    renderList();
+    hideCSVModal();
+    
+    if (added > 0) {
+        alert(`✅ Successfully added ${added} new item(s) to your list!`);
+    } else {
+        alert(`ℹ️ All items were already in your list (no new additions).`);
+    }
+}
+// ==================== SCANNER ====================
+let html5QrcodeScanner = null;
+
+function startScanner() {
+    document.getElementById('scanner-modal').classList.remove('hidden');
+    if (html5QrcodeScanner) html5QrcodeScanner.clear();
+    
+    html5QrcodeScanner = new Html5QrcodeScanner("reader", 
+        { fps: 10, qrbox: { width: 250, height: 250 } }, false);
+    
+    html5QrcodeScanner.render((decodedText) => {
+        stopScanner();
+        if (decodedText.startsWith(PREFIX)) {
+            try {
+                const imported = JSON.parse(decodedText.slice(PREFIX.length));
+                let added = 0;
+                imported.forEach(item => {
+                    if (!shoppingList.includes(item)) {
+                        shoppingList.push(item);
+                        added++;
+                    }
+                    if (!history.includes(item)) history.push(item);
+                });
+                saveData();
+                renderList();
+                alert(`✅ Imported ${added} new item(s) from shared list`);
+            } catch(e) { alert("Invalid shared list"); }
+        } else {
+            const item = decodedText.trim();
+            if (item && !shoppingList.includes(item)) {
+                shoppingList.push(item);
+                if (!history.includes(item)) history.push(item);
+                saveData();
+                renderList();
+                alert(`✅ Added: ${item}`);
+            }
+        }
+    }, () => {});
+}
+
+function stopScanner() {
+    if (html5QrcodeScanner) {
+        html5QrcodeScanner.clear();
+        html5QrcodeScanner = null;
+    }
+    document.getElementById('scanner-modal').classList.add('hidden');
+}
+
+// ==================== INIT ====================
+window.onload = () => {
+    loadData();
+    renderList();
+    renderBasket();
+    
+    // Close suggestions when clicking outside
+    document.addEventListener('click', (e) => {
+        const suggestions = document.getElementById('suggestions');
+        if (!e.target.closest('#add-input') && !e.target.closest('#suggestions')) {
+            suggestions.classList.add('hidden');
+        }
+    });
+    
+    console.log('%c✅ Grok Shopping List ready with smart suggestions', 'color:#10b981; font-size:13px');
+};
+</script>
+</body>
+</html>
