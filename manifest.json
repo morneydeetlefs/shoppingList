@@ -1,7 +1,7 @@
 {
   "name": "Wify's List",
   "short_name": "Wify List",
-  "start_url": "v1.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#18181b",
   "theme_color": "#10b981",
