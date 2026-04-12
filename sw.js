@@ -1,7 +1,7 @@
 const CACHE_NAME = 'grok-shopping-v1';
 const urlsToCache = [
     './',
-    'index.html'   // or shopping-list.html if that's your filename
+    'v1.html'   // or shopping-list.html if that's your filename
 ];
 
 self.addEventListener('install', event => {
