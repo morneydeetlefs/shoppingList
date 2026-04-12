@@ -11,11 +11,15 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%92%3C/text%3E%3C/svg%3E">
     
     <style>
-        body { font-family: system-ui, -apple-system, sans-serif; margin:0; }
+        body { font-family: system-ui, -apple-system, sans-serif; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        #suggestions { max-height: 280px; overflow-y: auto; }
-        button { transition: all 0.2s; }
+        li { transition: all 0.2s; }
+        #suggestions {
+            max-height: 280px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+        }
     </style>
 </head>
 <body class="bg-zinc-950 text-white min-h-screen pb-20">
