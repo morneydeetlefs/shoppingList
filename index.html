@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wify's List</title>
+    <title>wifey's List</title>
    
     <!-- Shopping cart icon -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' width='200' height='200'%3E%3Ctext y='140' font-size='160' text-anchor='middle' dominant-baseline='middle'%3E%F0%9F%9B%92%3C/text%3E%3C/svg%3E">
@@ -45,7 +45,7 @@
 
     <!-- Header -->
     <div class="bg-zinc-900 p-4 flex items-center justify-between sticky top-0 z-50">
-        <h1 class="text-2xl font-bold flex items-center gap-2">🛒 Wify's List</h1>
+        <h1 class="text-2xl font-bold flex items-center gap-2">🛒 wifey's List</h1>
         <div class="flex items-center gap-3 text-sm">
             <div id="list-count" class="bg-emerald-600 px-3 py-1 rounded-full">0</div>
             <div id="basket-count" class="bg-amber-600 px-3 py-1 rounded-full">0</div>
@@ -137,10 +137,10 @@ let shoppingList = [];
 let basket = [];
 let history = [];
 
-const LIST_KEY = 'wify_shopping_list';
-const BASKET_KEY = 'wify_shopping_basket';
-const HISTORY_KEY = 'wify_shopping_history';
-const PREFIX = "WIFYLIST:v1:";   // ← changed for shared lists
+const LIST_KEY = 'wifey_shopping_list';
+const BASKET_KEY = 'wifey_shopping_basket';
+const HISTORY_KEY = 'wifey_shopping_history';
+const PREFIX = "wifeyLIST:v1:";   // ← changed for shared lists
 
 function loadData() {
     shoppingList = JSON.parse(localStorage.getItem(LIST_KEY)) || [];
@@ -435,7 +435,7 @@ window.onload = () => {
         }
     });
     
-    console.log('%c✅ Wify\'s List - Fully Offline Ready', 'color:#10b981; font-size:14px');
+    console.log('%c✅ wifey\'s List - Fully Offline Ready', 'color:#10b981; font-size:14px');
 };
 
 if ('serviceWorker' in navigator) {
