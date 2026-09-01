@@ -8,8 +8,6 @@
     <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
         :root{
@@ -19,6 +17,8 @@
         }
         html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Nunito',system-ui,sans-serif;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
         #app{max-width:430px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;position:relative}
+
+        /* Header */
         header{background:var(--surface);padding:16px 20px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0}
         .header-title{font-size:20px;font-weight:800;letter-spacing:-0.3px}
         .header-title span{color:var(--coral)}
@@ -27,14 +27,17 @@
         .badge{font-size:13px;font-weight:700;padding:4px 12px;border-radius:20px;min-width:36px;text-align:center}
         .badge-list{background:rgba(232,115,90,0.18);color:var(--coral)}
         .badge-basket{background:rgba(90,196,138,0.15);color:var(--green)}
-        /* Sync indicator */
         .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:background .3s,box-shadow .3s;flex-shrink:0}
         .sync-dot.syncing{background:#F0C040;box-shadow:0 0 6px #F0C04088}
         .sync-dot.synced{background:var(--green);box-shadow:0 0 6px #5AC48A66}
         .sync-dot.error{background:#E05A5A;box-shadow:0 0 6px #E05A5A66}
+
+        /* Tabs */
         .tab-content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 16px 16px;display:none}
         .tab-content::-webkit-scrollbar{display:none}
         .tab-content.active{display:block}
+
+        /* Add */
         .add-section{padding:16px 16px 8px;flex-shrink:0;background:var(--bg)}
         .input-row{display:flex;gap:10px;position:relative}
         #add-input{flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:16px;color:var(--text);font-family:'Nunito',sans-serif;font-size:16px;font-weight:600;padding:14px 18px;outline:none;transition:border-color .2s}
@@ -42,15 +45,21 @@
         #add-input:focus{border-color:var(--coral)}
         .btn-add{background:var(--coral);border:none;border-radius:16px;color:white;font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;padding:0 22px;cursor:pointer;transition:background .15s,transform .1s;white-space:nowrap}
         .btn-add:active{background:var(--coral-dim);transform:scale(0.96)}
+
+        /* Suggestions */
         #suggestions{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--surface);border:1.5px solid var(--border);border-radius:16px;z-index:50;display:none;max-height:220px;overflow-y:auto}
         #suggestions.open{display:block}
         .suggestion-item{padding:13px 18px;font-size:15px;font-weight:600;cursor:pointer;color:var(--text);border-bottom:1px solid var(--border)}
         .suggestion-item:last-child{border-bottom:none}
         .suggestion-item:active{background:var(--card)}
+
+        /* Tool row */
         .tool-row{display:flex;gap:8px;padding:8px 16px 10px;flex-shrink:0}
         .btn-tool{flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;color:var(--muted);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:border-color .15s,color .15s}
         .btn-tool:hover{border-color:var(--coral);color:var(--text)}
         .btn-tool svg{width:18px;height:18px}
+
+        /* List items */
         .list-ul{list-style:none;padding-top:8px}
         .item-li{background:var(--card);border-radius:16px;margin-bottom:8px;display:flex;align-items:center;overflow:hidden;border:1.5px solid transparent;transition:border-color .2s}
         .item-check{width:54px;height:58px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
@@ -59,53 +68,67 @@
         .check-circle.ticked{background:var(--green);border-color:var(--green)}
         .item-name{flex:1;font-size:16px;font-weight:700;padding:16px 0;cursor:pointer;user-select:none}
         .item-name.done{text-decoration:line-through;color:var(--muted)}
-        .item-delete{width:44px;height:58px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:18px;flex-shrink:0;transition:color .15s}
+        .item-delete{width:44px;height:58px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);flex-shrink:0;transition:color .15s}
         .item-delete:hover{color:#E05A5A}
+
+        /* Basket items */
         .basket-item-li{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;margin-bottom:8px;display:flex;align-items:center;overflow:hidden}
         .basket-restore{width:54px;height:56px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
         .basket-tick{width:26px;height:26px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center}
         .basket-name{flex:1;font-size:16px;font-weight:600;color:var(--muted);text-decoration:line-through;cursor:pointer;padding:16px 0}
-        .basket-delete{width:44px;height:56px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);font-size:18px;flex-shrink:0;transition:color .15s}
+        .basket-delete{width:44px;height:56px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);flex-shrink:0;transition:color .15s}
         .basket-delete:hover{color:#E05A5A}
+
+        /* Empty states */
         .empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
         .empty-icon{font-size:48px;margin-bottom:12px}
         .empty-state p{font-size:16px;font-weight:600;line-height:1.5}
         .empty-state small{font-size:13px;font-weight:400;opacity:.7}
         .section-label{font-size:12px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);padding:12px 4px 6px}
+
+        /* Nav */
         nav{background:var(--surface);border-top:1px solid var(--border);display:flex;flex-shrink:0;padding-bottom:var(--safe)}
         .nav-btn{flex:1;background:none;border:none;color:var(--muted);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;padding:12px 0 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:color .15s}
         .nav-btn.active{color:var(--coral)}
         .nav-btn svg{width:22px;height:22px}
         .nav-indicator{width:4px;height:4px;border-radius:50%;background:var(--coral);opacity:0;transition:opacity .15s}
         .nav-btn.active .nav-indicator{opacity:1}
+
+        /* Clear basket */
         .btn-clear{width:100%;margin-top:16px;background:rgba(224,90,90,.08);border:1.5px solid rgba(224,90,90,.25);border-radius:16px;color:#E05A5A;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;padding:16px;cursor:pointer;transition:background .15s}
         .btn-clear:hover{background:rgba(224,90,90,.15)}
+
+        /* Modals */
         .modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,16,30,.85);z-index:100;align-items:flex-end;justify-content:center}
         .modal-overlay.open{display:flex}
-        .modal-sheet{background:var(--surface);border-radius:24px 24px 0 0;border:1.5px solid var(--border);border-bottom:none;width:100%;max-width:430px;padding:24px 20px;padding-bottom:calc(24px + var(--safe));animation:slideUp .25s ease}
+        .modal-sheet{background:var(--surface);border-radius:24px 24px 0 0;border:1.5px solid var(--border);border-bottom:none;width:100%;max-width:430px;padding:24px 20px 0;padding-bottom:calc(20px + var(--safe));animation:slideUp .25s ease;display:flex;flex-direction:column;max-height:80dvh}
         @keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
-        .modal-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 20px}
-        .modal-title{font-size:18px;font-weight:800;margin-bottom:16px;text-align:center}
-        #qr-modal.open{align-items:center}
-        #qr-modal .modal-sheet{border-radius:24px;max-width:320px;border-bottom:1.5px solid var(--border);text-align:center}
-        #qrcode{display:flex;justify-content:center;margin:8px 0 20px}
-        #qrcode canvas,#qrcode img{border-radius:12px}
+        .modal-handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 20px;flex-shrink:0}
+        .modal-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-shrink:0}
+        .modal-title{font-size:18px;font-weight:800}
+        .modal-count{font-size:13px;font-weight:600;color:var(--muted)}
+        .modal-scroll{flex:1;overflow-y:auto;scrollbar-width:none;margin:0 -20px;padding:8px 20px}
+        .modal-scroll::-webkit-scrollbar{display:none}
+        .modal-footer{flex-shrink:0;padding-top:12px;padding-bottom:4px}
+
+        /* History items */
+        .history-item{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+        .history-item:last-child{border-bottom:none}
+        .history-name{flex:1;font-size:15px;font-weight:600;color:var(--text)}
+        .history-add{background:rgba(232,115,90,0.12);border:none;border-radius:8px;color:var(--coral);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;padding:6px 12px;cursor:pointer;margin-right:8px;transition:background .15s;white-space:nowrap}
+        .history-add:hover{background:rgba(232,115,90,0.22)}
+        .history-del{width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);border:none;background:none;flex-shrink:0;border-radius:8px;transition:color .15s}
+        .history-del:hover{color:#E05A5A}
+
+        .history-empty{text-align:center;padding:40px 0;color:var(--muted);font-size:15px;font-weight:600}
+
+        /* Buttons */
         .btn-primary{width:100%;background:var(--coral);border:none;border-radius:14px;color:white;font-family:'Nunito',sans-serif;font-size:15px;font-weight:800;padding:15px;cursor:pointer;transition:background .15s}
         .btn-primary:hover{background:var(--coral-dim)}
-        .btn-secondary{width:100%;background:none;border:none;color:var(--muted);font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;padding:12px;cursor:pointer;margin-top:4px}
-        .csv-textarea{width:100%;background:var(--card);border:1.5px solid var(--border);border-radius:14px;color:var(--text);font-family:'Nunito',sans-serif;font-size:15px;font-weight:600;padding:14px 16px;resize:none;outline:none;transition:border-color .2s;margin-bottom:16px}
-        .csv-textarea::placeholder{color:var(--muted);font-weight:400}
-        .csv-textarea:focus{border-color:var(--coral)}
-        .csv-hint{font-size:13px;color:var(--muted);margin-bottom:12px}
-        .modal-row{display:flex;gap:10px}
-        .modal-row .btn-primary{flex:2}
-        .modal-row .btn-secondary{flex:1;border:1.5px solid var(--border);border-radius:14px;background:none;color:var(--muted);margin-top:0;padding:15px}
-        #scanner-modal{position:fixed;inset:0;background:#000;z-index:110;display:none;flex-direction:column}
-        #scanner-modal.open{display:flex}
-        #scanner-header{background:rgba(0,0,0,.6);padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
-        #scanner-close{background:rgba(255,255,255,.12);border:none;color:white;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-        #reader{flex:1}
-        #scanner-hint{background:rgba(0,0,0,.6);text-align:center;padding:14px;color:rgba(255,255,255,.6);font-size:13px;font-weight:600}
+        .btn-ghost{width:100%;background:none;border:1.5px solid var(--border);border-radius:14px;color:var(--muted);font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;padding:13px;cursor:pointer;transition:border-color .15s,color .15s}
+        .btn-ghost:hover{border-color:#E05A5A;color:#E05A5A}
+
+        /* Toast */
         #toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card);border:1.5px solid var(--border);color:var(--text);font-size:14px;font-weight:700;padding:12px 20px;border-radius:40px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:200}
         #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
         @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
@@ -133,17 +156,13 @@
     </div>
 
     <div class="tool-row" id="tool-row">
-        <button class="btn-tool" onclick="startScanner()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
-            Scan
-        </button>
-        <button class="btn-tool" onclick="showCSVModal()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Import CSV
-        </button>
         <button class="btn-tool" onclick="forcSync()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
             Sync now
+        </button>
+        <button class="btn-tool" onclick="showHistoryModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            History
         </button>
     </div>
 
@@ -170,28 +189,19 @@
     </nav>
 </div>
 
-<!-- CSV Modal -->
-<div id="csv-modal" class="modal-overlay" onclick="if(event.target===this)hideCSVModal()">
+<!-- History Modal -->
+<div id="history-modal" class="modal-overlay" onclick="if(event.target===this)hideHistoryModal()">
     <div class="modal-sheet" onclick="event.stopPropagation()">
         <div class="modal-handle"></div>
-        <div class="modal-title">Import items</div>
-        <p class="csv-hint">Paste a comma-separated list of items</p>
-        <textarea id="csv-text" class="csv-textarea" rows="5" placeholder="milk, bread, eggs, coffee…"></textarea>
-        <div class="modal-row">
-            <button class="btn-secondary" onclick="hideCSVModal()">Cancel</button>
-            <button class="btn-primary" onclick="importCSV()">Add to list</button>
+        <div class="modal-title-row">
+            <span class="modal-title">History</span>
+            <span class="modal-count" id="history-count"></span>
+        </div>
+        <div class="modal-scroll" id="history-list"></div>
+        <div class="modal-footer">
+            <button class="btn-ghost" onclick="clearAllHistory()">Clear all history</button>
         </div>
     </div>
-</div>
-
-<!-- Scanner -->
-<div id="scanner-modal">
-    <div id="scanner-header">
-        <span style="color:white;font-size:16px;font-weight:700">Scan barcode</span>
-        <button id="scanner-close" onclick="stopScanner()">✕</button>
-    </div>
-    <div id="reader"></div>
-    <div id="scanner-hint">Point camera at QR code or barcode</div>
 </div>
 
 <div id="toast"></div>
@@ -199,8 +209,8 @@
 <script>
 // ── Config ──────────────────────────────────────────────
 const WORKER_URL = 'https://shopping-list-api.morneydeetlefs.workers.dev';
-const POLL_INTERVAL = 15000; // poll every 15s as background heartbeat
-const HISTORY_KEY = 'Wifey_history'; // history stays local only
+const POLL_INTERVAL = 15000;
+const HISTORY_KEY = 'Wifey_history';
 
 // ── State ────────────────────────────────────────────────
 let shoppingList = [];
@@ -211,40 +221,31 @@ let isSaving = false;
 let pendingSave = false;
 
 // ── Sync dot ─────────────────────────────────────────────
-function setSyncState(state) {
-    const dot = document.getElementById('sync-dot');
-    dot.className = 'sync-dot ' + state;
+function setSyncState(s) {
+    document.getElementById('sync-dot').className = 'sync-dot ' + s;
 }
 
-// ── Cloud sync ───────────────────────────────────────────
+// ── Cloud ────────────────────────────────────────────────
 async function loadFromCloud() {
     setSyncState('syncing');
     try {
         const res = await fetch(WORKER_URL + '/state');
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+        if (!res.ok) throw new Error();
         const state = await res.json();
         shoppingList = state.list    || [];
         basket       = state.basket  || [];
-        // merge cloud history with local history
-        const cloudHistory = state.history || [];
-        cloudHistory.forEach(h => { if (!history.includes(h)) history.push(h); });
+        (state.history || []).forEach(h => { if (!history.includes(h)) history.push(h); });
         saveLocalHistory();
-        updateCounts();
-        renderList();
-        renderBasket();
+        updateCounts(); renderList(); renderBasket();
         setSyncState('synced');
-    } catch(e) {
+    } catch {
         setSyncState('error');
-        showToast('⚠ Could not reach cloud — showing local copy');
-        // fall back to localStorage snapshot
+        showToast('⚠ Could not reach cloud');
         const snap = localStorage.getItem('Wifey_snapshot');
         if (snap) {
             const s = JSON.parse(snap);
-            shoppingList = s.list   || [];
-            basket       = s.basket || [];
-            updateCounts();
-            renderList();
-            renderBasket();
+            shoppingList = s.list || []; basket = s.basket || [];
+            updateCounts(); renderList(); renderBasket();
         }
     }
 }
@@ -253,7 +254,6 @@ async function saveToCloud() {
     if (isSaving) { pendingSave = true; return; }
     isSaving = true;
     setSyncState('syncing');
-    // optimistic local snapshot so offline still works
     localStorage.setItem('Wifey_snapshot', JSON.stringify({ list: shoppingList, basket }));
     try {
         const res = await fetch(WORKER_URL + '/state', {
@@ -261,32 +261,25 @@ async function saveToCloud() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ list: shoppingList, basket, history })
         });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+        if (!res.ok) throw new Error();
         setSyncState('synced');
-    } catch(e) {
+    } catch {
         setSyncState('error');
-        showToast('⚠ Saved locally — will sync when back online');
+        showToast('⚠ Saved locally — will sync later');
     } finally {
         isSaving = false;
         if (pendingSave) { pendingSave = false; saveToCloud(); }
     }
 }
 
-function forcSync() {
-    loadFromCloud().then(() => showToast('✓ Synced'));
-}
-
-// Background polling — catches changes the other person made
-function startPolling() {
-    clearInterval(pollTimer);
-    pollTimer = setInterval(loadFromCloud, POLL_INTERVAL);
-}
+function forcSync() { loadFromCloud().then(() => showToast('✓ Synced')); }
+function startPolling() { clearInterval(pollTimer); pollTimer = setInterval(loadFromCloud, POLL_INTERVAL); }
 
 // ── History (local) ──────────────────────────────────────
-function saveLocalHistory() {
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-}
+function saveLocalHistory() { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); }
+function addToHistory(item) { if (!history.includes(item)) { history.push(item); saveLocalHistory(); } }
 
+// ── Counts ───────────────────────────────────────────────
 function updateCounts() {
     document.getElementById('list-count').textContent   = shoppingList.length;
     document.getElementById('basket-count').textContent = basket.length;
@@ -296,13 +289,11 @@ function updateCounts() {
 let toastTimer;
 function showToast(msg) {
     const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
+    t.textContent = msg; t.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
 }
 
-// ── Escape ────────────────────────────────────────────────
 function escHtml(s) {
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
@@ -311,7 +302,7 @@ function escHtml(s) {
 function renderList() {
     const ul = document.getElementById('list-ul');
     if (!shoppingList.length) {
-        ul.innerHTML = '<li class="empty-state"><div class="empty-icon">🛍️</div><p>Your list is empty</p><small>Add items above or import a list</small></li>';
+        ul.innerHTML = '<li class="empty-state"><div class="empty-icon">🛍️</div><p>Your list is empty</p><small>Type above to add items</small></li>';
         return;
     }
     ul.innerHTML = '';
@@ -362,13 +353,75 @@ function renderBasket() {
     cb.style.display = '';
 }
 
+// ── History modal ─────────────────────────────────────────
+function showHistoryModal() {
+    renderHistoryModal();
+    document.getElementById('history-modal').classList.add('open');
+}
+function hideHistoryModal() {
+    document.getElementById('history-modal').classList.remove('open');
+}
+
+function renderHistoryModal() {
+    const container = document.getElementById('history-list');
+    const countEl   = document.getElementById('history-count');
+    const sorted = [...history].sort((a, b) => a.localeCompare(b));
+    countEl.textContent = sorted.length ? `${sorted.length} item${sorted.length !== 1 ? 's' : ''}` : '';
+
+    if (!sorted.length) {
+        container.innerHTML = '<div class="history-empty">No history yet</div>';
+        return;
+    }
+
+    container.innerHTML = '';
+    sorted.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'history-item';
+        const alreadyOnList = shoppingList.includes(item);
+        row.innerHTML = `
+            <span class="history-name">${escHtml(item)}</span>
+            ${alreadyOnList
+                ? `<span style="font-size:12px;font-weight:600;color:var(--muted);margin-right:8px">On list</span>`
+                : `<button class="history-add" onclick="addFromHistory('${escHtml(item)}')">+ Add</button>`
+            }
+            <button class="history-del" onclick="deleteFromHistory('${escHtml(item)}')" title="Remove from history">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>`;
+        container.appendChild(row);
+    });
+}
+
+function addFromHistory(item) {
+    if (!shoppingList.includes(item)) shoppingList.push(item);
+    saveToCloud(); renderList();
+    renderHistoryModal(); // refresh "on list" states
+    showToast(`✓ Added: ${item}`);
+}
+
+function deleteFromHistory(item) {
+    history = history.filter(h => h !== item);
+    saveLocalHistory();
+    renderHistoryModal();
+    showToast('Removed from history');
+}
+
+function clearAllHistory() {
+    if (!confirm('Clear all history? This removes autocomplete suggestions but won\'t affect your current list.')) return;
+    history = [];
+    saveLocalHistory();
+    renderHistoryModal();
+    showToast('History cleared');
+}
+
 // ── Input & suggestions ───────────────────────────────────
 function handleInput() {
     const input = document.getElementById('add-input');
     const query = input.value.trim().toLowerCase();
     const box   = document.getElementById('suggestions');
     if (query.length < 1) { box.classList.remove('open'); return; }
-    const matches = history.filter(h => h.toLowerCase().includes(query) && !shoppingList.includes(h)).slice(0, 7);
+    const matches = history
+        .filter(h => h.toLowerCase().includes(query) && !shoppingList.includes(h))
+        .slice(0, 7);
     if (!matches.length) { box.classList.remove('open'); return; }
     box.innerHTML = '';
     matches.forEach(m => {
@@ -392,9 +445,8 @@ function addCurrentItem() {
     const value = input.value.trim();
     if (!value) return;
     if (!shoppingList.includes(value)) shoppingList.push(value);
-    if (!history.includes(value)) { history.push(value); saveLocalHistory(); }
-    saveToCloud();
-    renderList();
+    addToHistory(value);
+    saveToCloud(); renderList();
     input.value = '';
     document.getElementById('suggestions').classList.remove('open');
     input.focus();
@@ -402,17 +454,14 @@ function addCurrentItem() {
 
 // ── List / basket actions ─────────────────────────────────
 function tickItem(index) {
-    const items = document.querySelectorAll('.item-li');
-    const li = items[index];
+    const li = document.querySelectorAll('.item-li')[index];
     if (!li) { moveToBasket(index); return; }
     const circle = li.querySelector('.check-circle');
     const name   = li.querySelector('.item-name');
-    circle.classList.add('ticked');
-    name.classList.add('done');
+    circle.classList.add('ticked'); name.classList.add('done');
     circle.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
     setTimeout(() => moveToBasket(index), 380);
 }
-
 function moveToBasket(index) {
     const item = shoppingList.splice(index, 1)[0];
     if (!basket.includes(item)) basket.push(item);
@@ -424,14 +473,8 @@ function moveToList(index) {
     saveToCloud(); renderList(); renderBasket();
     showToast('↩ Moved back to list');
 }
-function deleteFromList(index) {
-    shoppingList.splice(index, 1);
-    saveToCloud(); renderList();
-}
-function deleteFromBasket(index) {
-    basket.splice(index, 1);
-    saveToCloud(); renderBasket();
-}
+function deleteFromList(index) { shoppingList.splice(index, 1); saveToCloud(); renderList(); }
+function deleteFromBasket(index) { basket.splice(index, 1); saveToCloud(); renderBasket(); }
 function clearBasket() {
     if (!confirm('Clear the entire basket?')) return;
     basket = []; saveToCloud(); renderBasket();
@@ -447,58 +490,14 @@ function switchTab(n) {
     else { as.style.display = 'none'; tr.style.display = 'none'; renderBasket(); }
 }
 
-// ── CSV Import ────────────────────────────────────────────
-function showCSVModal() { document.getElementById('csv-modal').classList.add('open'); setTimeout(() => document.getElementById('csv-text').focus(), 100); }
-function hideCSVModal() { document.getElementById('csv-modal').classList.remove('open'); document.getElementById('csv-text').value = ''; }
-function importCSV() {
-    const text = document.getElementById('csv-text').value.trim();
-    if (!text) { hideCSVModal(); return; }
-    const items = text.split(',').map(i => i.trim()).filter(i => i.length > 0);
-    let added = 0;
-    items.forEach(item => {
-        if (!shoppingList.includes(item)) { shoppingList.push(item); added++; }
-        if (!history.includes(item)) history.push(item);
-    });
-    saveLocalHistory();
-    saveToCloud(); renderList(); hideCSVModal();
-    showToast(added > 0 ? `✓ Added ${added} item${added > 1 ? 's' : ''}` : 'All items already in list');
-}
-
-// ── Scanner ───────────────────────────────────────────────
-let html5QrcodeScanner = null;
-function startScanner() {
-    document.getElementById('scanner-modal').classList.add('open');
-    if (html5QrcodeScanner) html5QrcodeScanner.clear();
-    html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 240, height: 240 } }, false);
-    html5QrcodeScanner.render((decodedText) => {
-        stopScanner();
-        const item = decodedText.trim();
-        if (item && !shoppingList.includes(item)) {
-            shoppingList.push(item);
-            if (!history.includes(item)) history.push(item);
-            saveLocalHistory();
-            saveToCloud(); renderList();
-            showToast(`✓ Added: ${item}`);
-        }
-    }, () => {});
-}
-function stopScanner() {
-    if (html5QrcodeScanner) { html5QrcodeScanner.clear(); html5QrcodeScanner = null; }
-    document.getElementById('scanner-modal').classList.remove('open');
-}
-
 // ── Init ──────────────────────────────────────────────────
 window.onload = () => {
-    // Load from cloud on start
     loadFromCloud();
     startPolling();
-
     document.addEventListener('click', e => {
         if (!e.target.closest('#add-input') && !e.target.closest('#suggestions'))
             document.getElementById('suggestions').classList.remove('open');
     });
-
-    // Sync when tab becomes visible again (e.g. switching back to app)
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') loadFromCloud();
     });
