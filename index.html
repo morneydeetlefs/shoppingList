@@ -232,10 +232,9 @@ async function loadFromCloud() {
         const res = await fetch(WORKER_URL + '/state');
         if (!res.ok) throw new Error();
         const state = await res.json();
-        shoppingList = state.list    || [];
-        basket       = state.basket  || [];
-        (state.history || []).forEach(h => { if (!history.includes(h)) history.push(h); });
-        saveLocalHistory();
+        shoppingList = state.list   || [];
+        basket       = state.basket || [];
+        // history is intentionally NOT loaded from cloud — stays local only
         updateCounts(); renderList(); renderBasket();
         setSyncState('synced');
     } catch {
@@ -259,7 +258,8 @@ async function saveToCloud() {
         const res = await fetch(WORKER_URL + '/state', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ list: shoppingList, basket, history })
+            body: JSON.stringify({ list: shoppingList, basket })
+            // history intentionally excluded — local only
         });
         if (!res.ok) throw new Error();
         setSyncState('synced');
